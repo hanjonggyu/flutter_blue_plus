@@ -20,7 +20,7 @@ class BluetoothCharacteristic {
   });
 
   BluetoothCharacteristic.fromProto(BmBluetoothCharacteristic p)
-      : remoteId = DeviceIdentifier(p.remoteId.toString()),
+      : remoteId = p.remoteId,
         serviceUuid = p.serviceUuid,
         secondaryServiceUuid = p.secondaryServiceUuid != null ? p.secondaryServiceUuid! : null,
         characteristicUuid = p.characteristicUuid;
@@ -60,7 +60,7 @@ class BluetoothCharacteristic {
       .where((m) => m.method == "OnCharacteristicReceived" || m.method == "OnCharacteristicWritten")
       .map((m) => m.arguments)
       .map((args) => BmCharacteristicData.fromMap(args))
-      .where((p) => p.remoteId == remoteId.toString())
+      .where((p) => p.remoteId == remoteId)
       .where((p) => p.serviceUuid == serviceUuid)
       .where((p) => p.characteristicUuid == characteristicUuid)
       .where((p) => p.success == true)
@@ -74,7 +74,7 @@ class BluetoothCharacteristic {
       .where((m) => m.method == "OnCharacteristicReceived")
       .map((m) => m.arguments)
       .map((args) => BmCharacteristicData.fromMap(args))
-      .where((p) => p.remoteId == remoteId.toString())
+      .where((p) => p.remoteId == remoteId)
       .where((p) => p.serviceUuid == serviceUuid)
       .where((p) => p.characteristicUuid == characteristicUuid)
       .where((p) => p.success == true)
@@ -95,13 +95,13 @@ class BluetoothCharacteristic {
   /// read a characteristic
   Future<List<int>> read({int timeout = 15}) async {
     // check connected
-    if (device.isConnected == false) {
+    if (device.isDisconnected) {
       throw FlutterBluePlusException(
           ErrorPlatform.fbp, "readCharacteristic", FbpErrorCode.deviceIsDisconnected.index, "device is not connected");
     }
 
     // Only allow a single ble operation to be underway at a time
-    _Mutex mtx = _MutexFactory.getMutexForKey("global");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global_${device.remoteId.str}");
     await mtx.take();
 
     // return value
@@ -109,7 +109,7 @@ class BluetoothCharacteristic {
 
     try {
       var request = BmReadCharacteristicRequest(
-        remoteId: remoteId.toString(),
+        remoteId: remoteId,
         characteristicUuid: characteristicUuid,
         serviceUuid: serviceUuid,
         secondaryServiceUuid: null,
@@ -166,20 +166,20 @@ class BluetoothCharacteristic {
     }
 
     // check connected
-    if (device.isConnected == false) {
+    if (device.isDisconnected) {
       throw FlutterBluePlusException(
           ErrorPlatform.fbp, "writeCharacteristic", FbpErrorCode.deviceIsDisconnected.index, "device is not connected");
     }
 
     // Only allow a single ble operation to be underway at a time
-    _Mutex mtx = _MutexFactory.getMutexForKey("global");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global_${device.remoteId.str}");
     await mtx.take();
 
     try {
       final writeType = withoutResponse ? BmWriteType.withoutResponse : BmWriteType.withResponse;
 
       var request = BmWriteCharacteristicRequest(
-        remoteId: remoteId.toString(),
+        remoteId: remoteId,
         characteristicUuid: characteristicUuid,
         serviceUuid: serviceUuid,
         secondaryServiceUuid: null,
@@ -227,7 +227,7 @@ class BluetoothCharacteristic {
   ///   - [forceIndications] Android Only. force indications to be used instead of notifications.
   Future<bool> setNotifyValue(bool notify, {int timeout = 15, bool forceIndications = false}) async {
     // check connected
-    if (device.isConnected == false) {
+    if (device.isDisconnected) {
       throw FlutterBluePlusException(
           ErrorPlatform.fbp, "setNotifyValue", FbpErrorCode.deviceIsDisconnected.index, "device is not connected");
     }
@@ -238,12 +238,12 @@ class BluetoothCharacteristic {
     }
 
     // Only allow a single ble operation to be underway at a time
-    _Mutex mtx = _MutexFactory.getMutexForKey("global");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global_${device.remoteId.str}");
     await mtx.take();
 
     try {
       var request = BmSetNotifyValueRequest(
-        remoteId: remoteId.toString(),
+        remoteId: remoteId,
         serviceUuid: serviceUuid,
         secondaryServiceUuid: null,
         characteristicUuid: characteristicUuid,
