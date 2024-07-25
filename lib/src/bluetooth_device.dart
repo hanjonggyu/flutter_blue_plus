@@ -108,7 +108,7 @@ class BluetoothDevice {
     bool dtook = await dmtx.take();
 
     // Only allow a single ble operation to be underway at a time
-    _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global");
     await mtx.take();
 
     try {
@@ -184,7 +184,7 @@ class BluetoothDevice {
     await dtx.take();
 
     // Only allow a single ble operation to be underway at a time?
-    _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global");
     if (queue) {
       await mtx.take();
     }
@@ -230,7 +230,7 @@ class BluetoothDevice {
     }
 
     // Only allow a single ble operation to be underway at a time
-    _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global");
     await mtx.take();
 
     List<BluetoothService> result = [];
@@ -347,7 +347,7 @@ class BluetoothDevice {
     }
 
     // Only allow a single ble operation to be underway at a time
-    _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global");
     await mtx.take();
 
     int rssi = 0;
@@ -399,7 +399,7 @@ class BluetoothDevice {
     }
 
     // Only allow a single ble operation to be underway at a time
-    _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global");
     await mtx.take();
 
     // predelay
@@ -527,7 +527,7 @@ class BluetoothDevice {
     }
 
     // Only allow a single ble operation to be underway at a time
-    _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global");
     await mtx.take();
 
     try {
@@ -570,7 +570,7 @@ class BluetoothDevice {
     }
 
     // Only allow a single ble operation to be underway at a time
-    _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global");
     await mtx.take();
 
     try {
