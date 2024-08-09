@@ -76,7 +76,8 @@ class BluetoothDescriptor {
     }
 
     // Only allow a single ble operation to be underway at a time
-    _Mutex mtx = _MutexFactory.getMutexForKey("global_${device.remoteId.str}");
+    // _Mutex mtx = _MutexFactory.getMutexForKey("global");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
     await mtx.take();
 
     // return value
@@ -134,7 +135,8 @@ class BluetoothDescriptor {
     }
 
     // Only allow a single ble operation to be underway at a time
-    _Mutex mtx = _MutexFactory.getMutexForKey("global_${device.remoteId.str}");
+    // _Mutex mtx = _MutexFactory.getMutexForKey("global");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
     await mtx.take();
 
     try {

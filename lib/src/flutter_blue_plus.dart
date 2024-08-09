@@ -11,6 +11,9 @@ class FlutterBluePlus {
 
   static bool _initialized = false;
 
+  static bool isTestPager = false;
+  static final RxMap<String, String> getTestPagerTotalCount = RxMap();
+
   /// native platform channel
   static final MethodChannel _methodChannel = const MethodChannel('flutter_blue_plus/methods');
 

@@ -390,15 +390,21 @@ Stream<T> _mergeStreams<T>(List<Stream<T>> streams) {
 // dart is single threaded, but still has task switching.
 // this mutex lets a single task through at a time.
 class _Mutex {
+
+  _Mutex({required this.key}) {
+    print("bluetoothWrite new Mutex Key = $key");
+  }
+
   final StreamController _controller = StreamController.broadcast();
   int execute = 0;
   int issued = 0;
+  String key;
 
   Future<bool> take() async {
     int mine = issued;
     issued++;
     // tasks are executed in the same order they call take()
-    while (mine != execute) {
+    while (!_controller.isClosed && mine != execute) {
       await _controller.stream.first; // wait
     }
     return true;
@@ -409,15 +415,26 @@ class _Mutex {
     _controller.add(null); // release waiting tasks
     return false;
   }
+
+  Future<void> dispose() async {
+    await _controller.close();
+  }
+
 }
 
 // Create mutexes in a parallel-safe way,
 class _MutexFactory {
   static final Map<String, _Mutex> _all = {};
   static _Mutex getMutexForKey(String key) {
-    _all[key] ??= _Mutex();
+    _all[key] ??= _Mutex(key: key);
     return _all[key]!;
   }
+
+  static Future<void> dispose(String key) async {
+    await _all[key]?.dispose();
+    _all.remove(key);
+  }
+
 }
 
 String _black(String s) {

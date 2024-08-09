@@ -101,7 +101,8 @@ class BluetoothCharacteristic {
     }
 
     // Only allow a single ble operation to be underway at a time
-    _Mutex mtx = _MutexFactory.getMutexForKey("global_${device.remoteId.str}");
+    // _Mutex mtx = _MutexFactory.getMutexForKey("global");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
     await mtx.take();
 
     // return value
@@ -149,6 +150,9 @@ class BluetoothCharacteristic {
     return responseValue;
   }
 
+  int totalCount = 0;
+  int count = 0;
+
   /// Writes a characteristic.
   ///  - [withoutResponse]: 
   ///       If `true`, the write is not guaranteed and always returns immediately with success.
@@ -160,7 +164,7 @@ class BluetoothCharacteristic {
   ///         3. Interrupted transfers can leave the characteristic in a partially written state
   ///         4. If the mtu is small, it is very very slow.
   Future<void> write(List<int> value,
-      {bool withoutResponse = false, bool allowLongWrite = false, int timeout = 15}) async {
+      {bool withoutResponse = false, bool allowLongWrite = false, int timeout = 15, Duration delay = Duration.zero}) async {
     //  check args
     if (withoutResponse && allowLongWrite) {
       throw ArgumentError("cannot longWrite withoutResponse, not allowed on iOS or Android");
@@ -172,11 +176,37 @@ class BluetoothCharacteristic {
           ErrorPlatform.fbp, "writeCharacteristic", FbpErrorCode.deviceIsDisconnected.index, "device is not connected");
     }
 
+    if (FlutterBluePlus.isTestPager) {
+      if (value.isNotEmpty && value[0] == 13) {
+        totalCount++;
+      }
+    }
+
+
     // Only allow a single ble operation to be underway at a time
-    _Mutex mtx = _MutexFactory.getMutexForKey("global_${device.remoteId.str}");
+    // _Mutex mtx = _MutexFactory.getMutexForKey("global");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
     await mtx.take();
 
+    // check connected
+    if (device.isDisconnected) {
+      await _MutexFactory.dispose("global_${remoteId.str}");
+      return;
+    }
+
+    var startTime = DateTime.now().millisecondsSinceEpoch;
+
+    if (FlutterBluePlus.isTestPager) {
+      if (value.isNotEmpty && value[0] == 13) {
+        count++;
+      }
+      FlutterBluePlus.getTestPagerTotalCount[remoteId.str] = "[$count][$totalCount]";
+      print('remoteId.str = ${remoteId.str}, bluetoothWrite[$totalCount][$count] value = $value');
+    }
+
+
     try {
+
       final writeType = withoutResponse ? BmWriteType.withoutResponse : BmWriteType.withResponse;
 
       var request = BmWriteCharacteristicRequest(
@@ -218,6 +248,15 @@ class BluetoothCharacteristic {
 
       return Future.value();
     } finally {
+
+      var endTime = DateTime.now().millisecondsSinceEpoch;
+      print('remoteId.str = ${remoteId.str}, bluetoothWrite[$totalCount][$count] value = $value intervalTime = ${endTime - startTime}');
+      if (delay != Duration.zero) {
+        var intervalTime = endTime - startTime;
+        if (intervalTime < delay.inMilliseconds) {
+          await Future.delayed(Duration(milliseconds: delay.inMilliseconds - intervalTime));
+        }
+      }
       mtx.give();
     }
   }
@@ -239,7 +278,8 @@ class BluetoothCharacteristic {
     }
 
     // Only allow a single ble operation to be underway at a time
-    _Mutex mtx = _MutexFactory.getMutexForKey("global_${device.remoteId.str}");
+    // _Mutex mtx = _MutexFactory.getMutexForKey("global");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
     await mtx.take();
 
     try {

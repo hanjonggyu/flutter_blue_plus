@@ -104,10 +104,11 @@ class BluetoothDevice {
     assert((mtu == null) || !autoConnect, "mtu and auto connect are incompatible");
 
     // make sure no one else is calling disconnect
-    _Mutex dmtx = _MutexFactory.getMutexForKey("disconnect");
+    _Mutex dmtx = _MutexFactory.getMutexForKey("disconnect_${remoteId.str}");
     bool dtook = await dmtx.take();
 
     // Only allow a single ble operation to be underway at a time
+    // _Mutex mtx = _MutexFactory.getMutexForKey("global");
     _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
     await mtx.take();
 
@@ -117,7 +118,7 @@ class BluetoothDevice {
         FlutterBluePlus._autoConnect.add(remoteId);
       }
 
-      var request = BmConnectRequest(
+      BmConnectRequest request = BmConnectRequest(
         remoteId: remoteId,
         autoConnect: autoConnect,
       );
@@ -195,10 +196,11 @@ class BluetoothDevice {
     int androidDelay = 2000,
   }) async {
     // Only allow a single disconnect operation at a time
-    _Mutex dtx = _MutexFactory.getMutexForKey("disconnect");
+    _Mutex dtx = _MutexFactory.getMutexForKey("disconnect_${remoteId.str}");
     await dtx.take();
 
     // Only allow a single ble operation to be underway at a time?
+    // _Mutex mtx = _MutexFactory.getMutexForKey("global");
     _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
     if (queue) {
       await mtx.take();
@@ -253,7 +255,7 @@ class BluetoothDevice {
     }
 
     // Only allow a single ble operation to be underway at a time
-    _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
+    _Mutex mtx = _MutexFactory.getMutexForKey("global");
     await mtx.take();
 
     List<BluetoothService> result = [];
@@ -370,6 +372,7 @@ class BluetoothDevice {
     }
 
     // Only allow a single ble operation to be underway at a time
+    // _Mutex mtx = _MutexFactory.getMutexForKey("global");
     _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
     await mtx.take();
 
@@ -421,7 +424,10 @@ class BluetoothDevice {
           ErrorPlatform.fbp, "requestMtu", FbpErrorCode.deviceIsDisconnected.index, "device is not connected");
     }
 
+    print('requestMtu() called _Mutex.take');
+
     // Only allow a single ble operation to be underway at a time
+    // _Mutex mtx = _MutexFactory.getMutexForKey("global");
     _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
     await mtx.take();
 
@@ -550,6 +556,7 @@ class BluetoothDevice {
     }
 
     // Only allow a single ble operation to be underway at a time
+    // _Mutex mtx = _MutexFactory.getMutexForKey("global");
     _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
     await mtx.take();
 
@@ -593,6 +600,7 @@ class BluetoothDevice {
     }
 
     // Only allow a single ble operation to be underway at a time
+    // _Mutex mtx = _MutexFactory.getMutexForKey("global");
     _Mutex mtx = _MutexFactory.getMutexForKey("global_${remoteId.str}");
     await mtx.take();
 
